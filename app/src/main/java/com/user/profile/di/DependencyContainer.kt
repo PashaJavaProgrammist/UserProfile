@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.user.profile.data.ClientConverter
+import com.user.profile.data.InMemoryRepository
+import com.user.profile.data.Repository
 import com.user.profile.ui.App
 import com.user.profile.ui.MainViewModel
 
@@ -22,10 +24,15 @@ class DependencyContainer {
             initializer {
                 MainViewModel(
                     clientConverter = clientConverter,
+                    repository = inMemoryRepository,
                 )
             }
         }
     }
 
     private val clientConverter by lazy { ClientConverter() }
+
+    private val inMemoryRepository: Repository by lazy {
+        InMemoryRepository()
+    }
 }

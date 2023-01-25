@@ -3,6 +3,7 @@ package com.user.profile.ui
 import androidx.lifecycle.ViewModel
 import com.user.profile.data.Client
 import com.user.profile.data.ClientConverter
+import com.user.profile.data.Repository
 import com.user.profile.ui.models.ClientUI
 import com.user.profile.ui.navigation.NavigationCommand
 import com.user.profile.ui.navigation.State
@@ -13,13 +14,12 @@ import kotlinx.coroutines.flow.*
 
 class MainViewModel(
     private val clientConverter: ClientConverter,
+    private val repository: Repository,
 ) : ViewModel() {
 
     private companion object {
         const val NO_USER_ID = -1L
     }
-
-    private val clientsList = mutableListOf<Client>()
 
     private var userForEditId = NO_USER_ID
 
@@ -38,7 +38,7 @@ class MainViewModel(
     private val _imageUrl = MutableStateFlow("")
     val imageUrl = _imageUrl.asStateFlow()
 
-    private val _clients = MutableStateFlow(clientsList)
+    private val _clients = MutableStateFlow(repository.clients)
     val clients: Flow<List<ClientUI>> = _clients.map { it.map(clientConverter::convert) }
 
     fun onAddClientClick() {
@@ -48,7 +48,7 @@ class MainViewModel(
 
     fun onEditUserClick(clientId: Long) {
         userForEditId = clientId
-        clientsList.firstOrNull { it.id == clientId }?.let {
+        repository.clientByIdOrNull(clientId)?.let {
             onNewWeight(it.weight)
             onNewDate(it.dateOfBirth)
             onNewPhoto(it.imageUri)
@@ -77,7 +77,7 @@ class MainViewModel(
         clearData()
 
         // to pass StateFlow '===' check
-        _clients.value = clientsList.copy()
+        _clients.value = repository.clients.copy()
         openClients()
     }
 
@@ -102,7 +102,7 @@ class MainViewModel(
     }
 
     private fun addNewUser() {
-        clientsList.add(
+        repository.addClient(
             Client(
                 id = System.currentTimeMillis(),
                 weight = weight.value,
@@ -113,19 +113,12 @@ class MainViewModel(
     }
 
     private fun editUser() {
-        clientsList.firstOrNull { it.id == userForEditId }?.let { client ->
-            val index = clientsList.indexOf(client)
-            clientsList.removeAt(index = index)
-            clientsList.add(
-                index = index,
-                element = Client(
-                    id = client.id,
-                    weight = weight.value,
-                    dateOfBirth = dob.value,
-                    imageUri = imageUrl.value,
-                ),
-            )
-        }
+        repository.updateClient(
+            clientId = userForEditId,
+            newWeight = weight.value,
+            newData = dob.value,
+            newImageUri = imageUrl.value,
+        )
     }
 
     private fun clearData() {

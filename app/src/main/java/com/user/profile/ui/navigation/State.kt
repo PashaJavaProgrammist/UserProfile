@@ -1,4 +1,4 @@
-package com.user.profile
+package com.user.profile.ui.navigation
 
 sealed class State(val route: String) {
     object Clients : State("clients")

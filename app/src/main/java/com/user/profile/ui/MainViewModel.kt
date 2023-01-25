@@ -1,14 +1,15 @@
 package com.user.profile.ui
 
 import androidx.lifecycle.ViewModel
+import com.user.profile.ui.navigation.NavigationCommand
+import com.user.profile.ui.navigation.State
 import com.user.profile.data.Client
 import com.user.profile.data.ClientConverter
 import com.user.profile.ui.models.ClientUI
 import com.user.profile.ui.utills.copy
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 
 class MainViewModel : ViewModel() {
 
@@ -21,6 +22,12 @@ class MainViewModel : ViewModel() {
     private val clientsList = mutableListOf<Client>()
 
     private var userForEditId = NO_USER_ID
+
+    private val _navigation = Channel<NavigationCommand>(
+        capacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val navigation = _navigation.receiveAsFlow()
 
     private val _weight = MutableStateFlow(0)
     val weight = _weight.asStateFlow()
@@ -36,6 +43,7 @@ class MainViewModel : ViewModel() {
 
     fun onAddClientClick() {
         clearData()
+        openWeight()
     }
 
     fun onEditUserClick(clientId: Long) {
@@ -45,6 +53,7 @@ class MainViewModel : ViewModel() {
             onNewDate(it.dateOfBirth)
             onNewPhoto(it.imageUri)
         }
+        openWeight()
     }
 
     fun onNewWeight(newWeight: Int) {
@@ -69,6 +78,27 @@ class MainViewModel : ViewModel() {
 
         // to pass StateFlow '===' check
         _clients.value = clientsList.copy()
+        openClients()
+    }
+
+    fun onBack() {
+        _navigation.trySend(NavigationCommand.Back)
+    }
+
+    fun openDate() {
+        _navigation.trySend(NavigationCommand.Screen(State.Date))
+    }
+
+    fun openPhoto() {
+        _navigation.trySend(NavigationCommand.Screen(State.Photo))
+    }
+
+    private fun openWeight() {
+        _navigation.trySend(NavigationCommand.Screen(State.Weight))
+    }
+
+    private fun openClients() {
+        _navigation.trySend(NavigationCommand.Screen(State.Clients))
     }
 
     private fun addNewUser() {

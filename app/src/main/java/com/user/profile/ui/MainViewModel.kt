@@ -1,23 +1,23 @@
 package com.user.profile.ui
 
 import androidx.lifecycle.ViewModel
-import com.user.profile.ui.navigation.NavigationCommand
-import com.user.profile.ui.navigation.State
 import com.user.profile.data.Client
 import com.user.profile.data.ClientConverter
 import com.user.profile.ui.models.ClientUI
+import com.user.profile.ui.navigation.NavigationCommand
+import com.user.profile.ui.navigation.State
 import com.user.profile.ui.utills.copy
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val clientConverter: ClientConverter,
+) : ViewModel() {
 
     private companion object {
         const val NO_USER_ID = -1L
     }
-
-    private val converter = ClientConverter() // todo: move to DI
 
     private val clientsList = mutableListOf<Client>()
 
@@ -39,7 +39,7 @@ class MainViewModel : ViewModel() {
     val imageUrl = _imageUrl.asStateFlow()
 
     private val _clients = MutableStateFlow(clientsList)
-    val clients: Flow<List<ClientUI>> = _clients.map { it.map(converter::convert) }
+    val clients: Flow<List<ClientUI>> = _clients.map { it.map(clientConverter::convert) }
 
     fun onAddClientClick() {
         clearData()

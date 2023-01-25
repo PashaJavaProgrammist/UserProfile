@@ -18,6 +18,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.user.profile.di.DependencyContainer.Companion.dependencies
 import com.user.profile.ui.navigation.NavigationCommand
 import com.user.profile.ui.navigation.State
 import com.user.profile.ui.screens.ClientsScreen
@@ -31,9 +32,12 @@ import com.user.profile.ui.utills.hideSystemUI
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        val viewModel: MainViewModel by viewModels()
         hideSystemUI()
+
+        val viewModel: MainViewModel by viewModels { dependencies.mainViewModelFactory }
+
         setContent {
             UserProfileTheme {
                 Surface(

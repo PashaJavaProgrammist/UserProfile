@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
         viewModel: MainViewModel,
         navController: NavHostController,
     ) {
-        LaunchedEffect(viewModel) {
+        LaunchedEffect(this) {
             viewModel.navigation
                 .flowWithLifecycle(lifecycle)
                 .collect { command ->

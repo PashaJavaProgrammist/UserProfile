@@ -17,6 +17,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.user.profile.ui.MainViewModel
 import com.user.profile.ui.items.BottomBar
 
+private const val MIN_KG = 20
+private const val MAS_KG = 200
+
 @Composable
 fun WeightScreen(
     modifier: Modifier = Modifier,
@@ -50,8 +53,8 @@ fun WeightScreen(
                 NumberPicker(
                     modifier = Modifier,
                     value = weight,
-                    minValue = 20, // todo to const
-                    maxValue = 200,
+                    minValue = MIN_KG,
+                    maxValue = MAS_KG,
                     onValueChange = { newWeight ->
                         onNewWeight(newWeight)
                     },

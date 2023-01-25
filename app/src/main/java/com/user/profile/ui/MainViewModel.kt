@@ -7,28 +7,36 @@ import com.user.profile.ui.models.ClientUI
 import com.user.profile.ui.utills.copy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 
 class MainViewModel : ViewModel() {
+
+    private companion object {
+        const val NO_USER_ID = -1L
+    }
 
     private val converter = ClientConverter() // todo: move to DI
 
     private val clientsList = mutableListOf<Client>()
 
-    private var userForEditId = -1L
+    private var userForEditId = NO_USER_ID
 
     private val _weight = MutableStateFlow(0)
-    val weight: StateFlow<Int> = _weight
+    val weight = _weight.asStateFlow()
 
     private val _dob = MutableStateFlow(System.currentTimeMillis())
-    val dob: StateFlow<Long> = _dob
+    val dob = _dob.asStateFlow()
 
     private val _imageUrl = MutableStateFlow("")
-    val imageUrl: StateFlow<String> = _imageUrl
+    val imageUrl = _imageUrl.asStateFlow()
 
     private val _clients = MutableStateFlow(clientsList)
     val clients: Flow<List<ClientUI>> = _clients.map { it.map(converter::convert) }
+
+    fun onAddClientClick() {
+        clearData()
+    }
 
     fun onEditUserClick(clientId: Long) {
         userForEditId = clientId
@@ -52,31 +60,10 @@ class MainViewModel : ViewModel() {
     }
 
     fun completeFlow() {
-        if (userForEditId == -1L) {
-            // add new user
-            clientsList.add(
-                Client(
-                    id = System.currentTimeMillis(),
-                    weight = weight.value,
-                    dateOfBirth = dob.value,
-                    imageUri = imageUrl.value,
-                ),
-            )
+        if (userForEditId == NO_USER_ID) {
+            addNewUser()
         } else {
-            // edit old user
-            clientsList.firstOrNull { it.id == userForEditId }?.let { client ->
-                val index = clientsList.indexOf(client)
-                clientsList.removeAt(index = index)
-                clientsList.add(
-                    index = index,
-                    element = Client(
-                        id = client.id,
-                        weight = weight.value,
-                        dateOfBirth = dob.value,
-                        imageUri = imageUrl.value,
-                    ),
-                )
-            }
+            editUser()
         }
         clearData()
 
@@ -84,7 +71,35 @@ class MainViewModel : ViewModel() {
         _clients.value = clientsList.copy()
     }
 
+    private fun addNewUser() {
+        clientsList.add(
+            Client(
+                id = System.currentTimeMillis(),
+                weight = weight.value,
+                dateOfBirth = dob.value,
+                imageUri = imageUrl.value,
+            ),
+        )
+    }
+
+    private fun editUser() {
+        clientsList.firstOrNull { it.id == userForEditId }?.let { client ->
+            val index = clientsList.indexOf(client)
+            clientsList.removeAt(index = index)
+            clientsList.add(
+                index = index,
+                element = Client(
+                    id = client.id,
+                    weight = weight.value,
+                    dateOfBirth = dob.value,
+                    imageUri = imageUrl.value,
+                ),
+            )
+        }
+    }
+
     private fun clearData() {
+        userForEditId = NO_USER_ID
         onNewWeight(0)
         onNewDate(System.currentTimeMillis())
         onNewPhoto("")

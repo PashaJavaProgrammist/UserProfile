@@ -52,7 +52,10 @@ class MainActivity : ComponentActivity() {
                                         viewModel.onEditUserClick(clientId)
                                         navController.navigate(State.Weight.route)
                                     },
-                                    onAddClient = { navController.navigate(State.Weight.route) },
+                                    onAddClient = {
+                                        viewModel.onAddClientClick()
+                                        navController.navigate(State.Weight.route)
+                                    },
                                 )
                             }
                             composable(State.Weight.route) {

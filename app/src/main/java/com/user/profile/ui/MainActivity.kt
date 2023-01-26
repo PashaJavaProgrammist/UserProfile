@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.flowWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -80,7 +79,7 @@ class MainActivity : ComponentActivity() {
             composable(State.Clients.route) {
                 ClientsScreen(
                     viewModel = viewModel,
-                    onBackClick = { finish() },
+                    onBackClick = onBackPressedDispatcher::onBackPressed,
                     onEditClientClick = viewModel::onEditUserClick,
                     onAddClient = viewModel::onAddClientClick,
                 )
@@ -125,17 +124,8 @@ class MainActivity : ComponentActivity() {
                 .flowWithLifecycle(lifecycle)
                 .collect { command ->
                     when (command) {
-                        NavigationCommand.Back -> {
-                            navController.popBackStack()
-                        }
-                        is NavigationCommand.Screen -> {
-                            navController.navigate(
-                                route = command.state.route,
-                                navOptions = NavOptions.Builder()
-                                    .setLaunchSingleTop(singleTop = command.clearTop)
-                                    .build(),
-                            )
-                        }
+                        NavigationCommand.Back -> navController.popBackStack()
+                        is NavigationCommand.Screen -> navController.navigate(route = command.state.route)
                     }
                 }
         }
@@ -143,13 +133,12 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun BackPressCallback(navController: NavHostController) {
-        onBackPressedDispatcher.addCallback {
+        onBackPressedDispatcher.addCallback(owner = this) {
             if (navController.currentDestination?.route == State.Clients.route) {
                 finish()
             } else {
                 handleOnBackPressed()
             }
-            remove()
         }
     }
 }

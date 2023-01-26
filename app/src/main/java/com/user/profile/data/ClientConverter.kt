@@ -11,7 +11,7 @@ class ClientConverter {
     fun convert(client: Client): ClientUI {
         return ClientUI(
             id = client.id,
-            weight = "${client.weight} kg",
+            weight = "${client.weight.value} ${client.weight.weightUnit.name}",
             dateOfBirth = sdf.format(Date(client.dateOfBirth)),
             imageUri = client.imageUri,
         )

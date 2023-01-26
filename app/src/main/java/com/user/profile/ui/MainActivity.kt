@@ -90,6 +90,7 @@ class MainActivity : ComponentActivity() {
                     viewModel = viewModel,
                     onBackClick = viewModel::onBack,
                     onNewWeight = viewModel::onNewWeight,
+                    onNewWeightUnit = viewModel::onNewWeightUnit,
                     onNextClick = viewModel::openDate,
                 )
             }

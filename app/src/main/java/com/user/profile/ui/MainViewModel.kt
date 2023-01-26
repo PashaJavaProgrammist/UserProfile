@@ -1,9 +1,7 @@
 package com.user.profile.ui
 
 import androidx.lifecycle.ViewModel
-import com.user.profile.data.Client
-import com.user.profile.data.ClientConverter
-import com.user.profile.data.Repository
+import com.user.profile.data.*
 import com.user.profile.ui.models.ClientUI
 import com.user.profile.ui.navigation.NavigationCommand
 import com.user.profile.ui.navigation.State
@@ -13,8 +11,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 
 class MainViewModel(
-    private val clientConverter: ClientConverter,
     private val repository: Repository,
+    private val clientConverter: ClientConverter,
+    private val weightConverter: WeightConverter,
 ) : ViewModel() {
 
     private companion object {
@@ -23,13 +22,15 @@ class MainViewModel(
 
     private var userForEditId = NO_USER_ID
 
+    private var weightUnit = WeightUnit.KG
+
     private val _navigation = Channel<NavigationCommand>(
         capacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val navigation = _navigation.receiveAsFlow()
 
-    private val _weight = MutableStateFlow(0)
+    private val _weight = MutableStateFlow(Weight(value = 0, weightUnit = weightUnit))
     val weight = _weight.asStateFlow()
 
     private val _dob = MutableStateFlow(System.currentTimeMillis())
@@ -49,7 +50,8 @@ class MainViewModel(
     fun onEditUserClick(clientId: Long) {
         userForEditId = clientId
         repository.clientByIdOrNull(clientId)?.let {
-            onNewWeight(it.weight)
+            onNewWeightUnit(it.weight.weightUnit)
+            onNewWeight(it.weight.value)
             onNewDate(it.dateOfBirth)
             onNewPhoto(it.imageUri)
         }
@@ -57,7 +59,26 @@ class MainViewModel(
     }
 
     fun onNewWeight(newWeight: Int) {
-        _weight.value = newWeight
+        _weight.value = Weight(
+            value = newWeight,
+            weightUnit = weightUnit,
+        )
+    }
+
+    fun onNewWeightUnit(newWeightUnit: WeightUnit) {
+        val w = weight.value
+        val currentWeightUnit = w.weightUnit
+        val currentWeight = w.value
+
+        if (currentWeightUnit != newWeightUnit) {
+            weightUnit = newWeightUnit
+            onNewWeight(
+                when (newWeightUnit) {
+                    WeightUnit.LB -> weightConverter.convertKgToLb(currentWeight)
+                    WeightUnit.KG -> weightConverter.convertLbToKg(currentWeight)
+                }
+            )
+        }
     }
 
     fun onNewDate(newDate: Long) {
@@ -124,6 +145,7 @@ class MainViewModel(
     private fun clearData() {
         userForEditId = NO_USER_ID
         onNewWeight(0)
+        onNewWeightUnit(WeightUnit.KG)
         onNewDate(System.currentTimeMillis())
         onNewPhoto("")
     }

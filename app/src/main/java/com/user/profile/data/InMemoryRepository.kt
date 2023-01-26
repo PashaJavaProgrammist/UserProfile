@@ -15,7 +15,12 @@ class InMemoryRepository : Repository {
         clientsList.add(client)
     }
 
-    override fun updateClient(clientId: Long, newWeight: Int, newData: Long, newImageUri: String) {
+    override fun updateClient(
+        clientId: Long,
+        newWeight: Weight,
+        newData: Long,
+        newImageUri: String,
+    ) {
         clientByIdOrNull(clientId)?.let { client ->
             val index = clientsList.indexOf(client)
             clientsList.removeAt(index = index)

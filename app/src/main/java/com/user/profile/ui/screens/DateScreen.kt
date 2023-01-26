@@ -75,22 +75,24 @@ fun Calendar(
         modifier = modifier,
         factory = { context ->
             CalendarView(context).apply {
-                date = time
                 maxDate = System.currentTimeMillis()
+                date = time
+                setOnDateChangeListener { _, year, month, dayOfMonth ->
+                    val date = LocalDate
+                        .now()
+                        .withMonth(month + 1)
+                        .withYear(year)
+                        .withDayOfMonth(dayOfMonth)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant()
+                        .toEpochMilli()
+                    onDateSelected(date)
+                }
             }
         },
         update = { view ->
-            view.setOnDateChangeListener { _, year, month, dayOfMonth ->
-                val date = LocalDate
-                    .now()
-                    .withMonth(month + 1)
-                    .withYear(year)
-                    .withDayOfMonth(dayOfMonth)
-                    .atStartOfDay(ZoneOffset.UTC)
-                    .toInstant()
-                    .toEpochMilli()
-                onDateSelected(date)
-            }
+            view.maxDate = System.currentTimeMillis()
+            view.date = time
         }
     )
 }

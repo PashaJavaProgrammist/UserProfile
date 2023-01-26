@@ -6,5 +6,5 @@ interface Repository {
 
     fun clientByIdOrNull(clientId: Long): Client?
     fun addClient(client: Client)
-    fun updateClient(clientId: Long, newWeight: Int, newData: Long, newImageUri: String)
+    fun updateClient(clientId: Long, newWeight: Weight, newData: Long, newImageUri: String)
 }
